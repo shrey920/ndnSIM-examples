@@ -1,0 +1,49 @@
+# architecture.txt
+
+#                                                               0 /------\
+#                                                          +----->|  t1  |
+#                                                         /       \------/
+#                                                        /        
+#    /------\ 0                                         /       0 /------\
+#    |  u2  |<--+                                      /      +-->|  f1  |
+#    \------/    \                                    /      /    \------/
+#                 \                                  |      /     
+#                  \  1  v0                         2v  3  /      
+#                   +->/------\                 /------\<-+       
+#                     2|  n1  |<===============>|  n2  |4         
+#                   +->\------/4               0\------/<-+       
+#                  /                                 ^5    \      
+#                 /                                  |      \     
+#    /------\ 0  /                                    \      \  0 /------\
+#    |  u3  |<--+                                      \      +-->|  t2  |
+#    \------/                                           \         \------/
+#                          "All consumer-router and"     \        
+#                          "router-producer links are"    \    0 /------\
+#                          "10Mbps"                        +---->|  f2  |
+#                                                                \------/
+#                                                                
+#    "Numbers near nodes denote face IDs. Face ID is assigned based on the order of link"
+#    "definitions in the topology file"
+
+router
+
+#name   city    latitude  longitude
+u1      NA    	50        30
+u2      NA    	30        30
+n1      NA    	40        40
+n2      NA    	40        80
+t1      NA    	60        85
+f1      NA    	50        90
+t2      NA    	20        85
+f2      NA    	30        90
+
+link
+
+#x      y       capacity(kbps)  OSPF    Delay   MaxPackets
+u1      n1      10Mbps          1       50ms    200
+u2      n1      10Mbps          1       10ms    200
+n1      n2      1Mbps           1176    20ms    20 
+n2      t1      10Mbps          260     1ms     200
+n2      f1      10Mbps          700     1ms     200
+n2      t2      10Mbps          1       1ms     200
+n2      f2      10Mbps          1       1ms     200

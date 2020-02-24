@@ -1,4 +1,3 @@
-// export DISPLAY=:0
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
  * Copyright (c) 2011-2015  Regents of the University of California.
@@ -77,15 +76,13 @@ main(int argc, char* argv[])
   cmd.Parse(argc, argv);
 
   AnnotatedTopologyReader topologyReader("", 1);
-  topologyReader.SetFileName("src/ndnSIM/examples/topologies/demo.txt");
+  topologyReader.SetFileName("src/ndnSIM/examples/topologies/scenario2.txt");
   topologyReader.Read();
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
-  
-  ndnHelper.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize",
-                               "0"); // ! Attention ! If set to 0, then MaxSize is infinite
-  // ndnHelper.setCsSize(100);
+  ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize",
+                               "1"); // ! Attention ! If set to 0, then MaxSize is infinite
   ndnHelper.InstallAll();
 
   // Set BestRoute strategy
@@ -120,7 +117,6 @@ main(int argc, char* argv[])
 
     ndn::AppHelper producerHelper("ns3::ndn::Producer");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-    producerHelper.SetAttribute ("Freshness", TimeValue (Seconds (5)));
 
     // install producer that will satisfy Interests in /dst1 namespace
     producerHelper.SetPrefix(prefix);
@@ -134,48 +130,29 @@ main(int argc, char* argv[])
   // install consumer app on consumer node to request data from producer //
   /////////////////////////////////////////////////////////////////////////////////
 
-  // for (int j=0; j<5; j++){
-    int i = 0;
-    installConsumer(consumers[0], "room1", producers[0], i, i+2);
-    installConsumer(consumers[0], "room1", producers[1], i, i+2);
+  for (int j=0; j<5; j++){
+    int i = j*10;
+    installConsumer(consumers[0], "room1", producers[0], i, i+5);
+    installConsumer(consumers[1], "room1", producers[1], i, i+5);
 
-    i = 2;
-    installConsumer(consumers[0], "room2", producers[2], i, i+2);
-    installConsumer(consumers[0], "room2", producers[3], i, i+2);
+    installConsumer(consumers[0], "room2", producers[2], i+5, i+10);
+    installConsumer(consumers[1], "room2", producers[3], i+5, i+10);
 
-    i = 5;
-    installConsumer(consumers[1], "room1", producers[0], i, i+2);
-    installConsumer(consumers[1], "room1", producers[1], i, i+2);
-
-
-    i = 7;
-    installConsumer(consumers[1], "room2", producers[2], i, i+4);
-    installConsumer(consumers[1], "room2", producers[3], i, i+4);
-
-
-
-
-    
-    // i = i + 12;
-    // installConsumer(consumers[1], "room1", producers[0], i, i+5);
-    // installConsumer(consumers[1], "room1", producers[1], i, i+5);
-
-    // installConsumer(consumers[1], "room2", producers[2], i+5, i+10);
-    // installConsumer(consumers[1], "room2", producers[3], i+5, i+10);
-
-
-    
-
-  // }
+  }
 
 
 
 
   // Manually configure FIB routes
-  ndn::FibHelper::AddRoute("c1", "/data", "n1", 1); // link to n1
+  // ndn::FibHelper::AddRoute("c1", "/data", "n1", 1); // link to n1
   ndn::FibHelper::AddRoute("c2", "/data", "n1", 1); // link to n1
+  ndn::FibHelper::AddRoute("c1", "/data", "n3", 2); // link to n3
+  // ndn::FibHelper::AddRoute("c2", "/data", "n3", 2); // link to n3
 
   ndn::FibHelper::AddRoute("n1", "/data", "n2", 1);  // link to n2
+  ndn::FibHelper::AddRoute("n1", "/data", "n3", 1);  // link to n3
+
+  ndn::FibHelper::AddRoute("n3", "/data", "n2", 1);  // link to n2
 
   ndn::FibHelper::AddRoute("n2", "/data/room1/t1", "t1", 1); // link to t1
   ndn::FibHelper::AddRoute("n2", "/data/room1/h1", "h1", 1); // link to h1
@@ -184,9 +161,6 @@ main(int argc, char* argv[])
 
   // Schedule simulation time and run the simulation
   Simulator::Stop(Seconds(20.0));
-  ndn::CsTracer::InstallAll("cs-trace.txt", Seconds(0.2));
-  ndn::L3RateTracer::InstallAll("rate-trace.txt", Seconds(0.2));
-
   Simulator::Run();
   Simulator::Destroy();
 
